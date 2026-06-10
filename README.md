@@ -1,4 +1,4 @@
-# Xiaomi Mi Band 10 Vela JS Development Skill
+# Skill Sviluppo Vela JS per Xiaomi Mi Band 10
 
 Skill completa per sviluppare Quick Apps Vela JS su **Xiaomi Mi Band 10** usando Hermes Agent.
 
@@ -6,9 +6,9 @@ Skill completa per sviluppare Quick Apps Vela JS su **Xiaomi Mi Band 10** usando
 
 - **Workflow completo**: setup AIoT-IDE, struttura progetto, build, deploy
 - **Comunicazione Band↔Android**: `system.interconnect` + XMS Wearable SDK
-- **Sensori**: accelerometro, barometro, GPS, heart rate
-- **UI Components**: layout, swiper, list, chart, canvas
-- **Storage & File System**: persistent storage, file operations
+- **Sensori**: accelerometro, barometro, GPS, frequenza cardiaca
+- **Componenti UI**: layout, swiper, list, chart, canvas
+- **Storage & File System**: storage persistente, operazioni su file
 - **Esempi reali**: pattern da `open-vela/packages_apps`
 - **Pitfalls & Troubleshooting**: problemi comuni e soluzioni
 
@@ -17,7 +17,7 @@ Skill completa per sviluppare Quick Apps Vela JS su **Xiaomi Mi Band 10** usando
 - Sviluppo di Quick Apps per Xiaomi Mi Band 10
 - Integrazione sensori wearable
 - Comunicazione tra band e smartphone Android
-- UI design per display 212×520px AMOLED
+- Design UI per display AMOLED 212×520px
 - Ottimizzazione RAM/CPU su dispositivi embedded
 
 ## 📦 Installazione
@@ -84,7 +84,7 @@ xiaomi-miband10-vela-js/
 
 - **Skill originale**: Installata in `~/.hermes/skills/software-development/xiaomi-miband10-vela-js/`
 - **Documentazione Vela JS**: https://iot.mi.com/vela/quickapp/en/guide/
-- **OpenVela repository**: https://github.com/open-vela/packages_apps
+- **Repository OpenVela**: https://github.com/open-vela/packages_apps
 - **Esempio app completa**: https://github.com/paraflu/miband10-hourly-vibrator
 
 ## 🤝 Contribuire
@@ -108,5 +108,5 @@ Creata da **Andrea Forlin** (@paraflu) - sviluppata con Hermes Agent
 ---
 
 **Target**: Xiaomi Mi Band 10 (HyperOS 2, OpenVela RTOS)  
-**Runtime**: Vela JS (ES6+, .ux template syntax)  
-**Display**: 212×520px AMOLED (480px logici)
+**Runtime**: Vela JS (ES6+, sintassi template .ux)  
+**Display**: AMOLED 212×520px (480px logici)
