@@ -169,7 +169,7 @@ Discovered new patterns, APIs, or pitfalls? Contributions are welcome:
 
 ## 📄 License
 
-This skill is part of the Hermes Agent ecosystem and is released under the same terms.
+This skill is released under the [MIT License](LICENSE).
 
 ## 👤 Author
 
