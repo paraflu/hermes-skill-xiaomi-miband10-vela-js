@@ -76,33 +76,59 @@ mkdir -p pages/index common
 
 ```
 my-band-app/
-├── src/                      # Codice sorgente (se usi toolchain moderno)
-│   ├── app.ux               # Entry point globale (onCreate/onDestroy)
-│   ├── manifest.json        # Configurazione app
-│   ├── pages/               # Pagine dell'app
+├── src/                          # Codice sorgente
+│   ├── app.ux                   # Entry point globale (onCreate/onDestroy)
+│   ├── manifest.json            # Configurazione app
+│   ├── config-watch.json        # Configurazione watch mode
+│   ├── pages/                   # Pagine dell'app
 │   │   └── index/
-│   │       └── index.ux     # Pagina principale
-│   ├── common/              # Risorse condivise
-│   │   ├── logo.png         # Icona app (108×108px)
-│   │   ├── images/          # Altre immagini
-│   │   └── utils.js         # Utility functions
-│   ├── i18n/                # Internazionalizzazione (opzionale)
-│   │   ├── en.json
-│   │   ├── zh-CN.json
-│   │   └── defaults.json
-│   └── config-watch.json    # Configurazione watch mode
-├── dist/                     # Build output (generato, .gitignore)
+│   │       └── index.ux         # Pagina principale
+│   ├── common/                  # Risorse condivise
+│   │   ├── logo.png             # Icona app (108×108px)
+│   │   ├── logo.svg             # Versione vettoriale (opzionale)
+│   │   ├── images/              # Altre immagini
+│   │   └── utils.js             # Utility functions
+│   └── i18n/                    # Internazionalizzazione (opzionale)
+│       ├── en.json
+│       ├── zh-CN.json
+│       └── defaults.json
+├── .vscode/                      # Configurazione VS Code
+│   └── mcp.json                 # MCP server config (opzionale)
+├── dist/                         # Build output (generato, .gitignore)
 ├── .gitignore
-├── package.json             # Dipendenze e scripts (opzionale)
-├── README.md
-└── build.sh                 # Script helper (opzionale)
+├── .npmignore                    # Esclusioni per npm publish
+├── .eslintignore                # File da ignorare per ESLint
+├── package.json                 # Dipendenze e scripts
+├── package-lock.json            # Lock delle dipendenze
+├── jsconfig.json                # Configurazione JavaScript/TypeScript
+├── .prettierrc.js               # Formattazione codice
+├── .stylelintrc.js              # Linting CSS/UX styles
+├── .eslintrc.js                 # Linting JavaScript (se presente)
+├── commitlint.config.js         # Conventional commits
+├── husky.sh                     # Git hooks setup
+├── build.sh                     # Script build helper
+├── DEVELOPMENT.md               # Note tecniche e decisioni
+└── README.md                    # Documentazione utente
 ```
 
+**File essenziali minimi (per AIoT-IDE):**
+- `src/manifest.json` — configurazione package, features, router
+- `src/app.ux` — lifecycle globale
+- `src/pages/index/index.ux` — pagina principale
+- `src/common/logo.png` — icona 108×108px
+
+**Toolchain professionale (opzionale ma raccomandato):**
+- `package.json` + `package-lock.json` — gestione dipendenze
+- `.prettierrc.js`, `.stylelintrc.js`, `.eslintignore` — code quality
+- `commitlint.config.js` + `husky.sh` — git hooks per commit convenzionali
+- `jsconfig.json` — IntelliSense e completamento automatico
+- `.vscode/mcp.json` — integrazione MCP server per AI tools
+
 **Note sulla struttura:**
-- AIoT-IDE può creare direttamente `app.ux` e `manifest.json` nella root
-- La cartella `src/` è opzionale ma raccomandata per progetti professionali
-- File **essenziali minimi**: `manifest.json`, `app.ux`, `pages/index/index.ux`, `common/logo.png`
-- Cartella `dist/` è generata da AIoT-IDE durante il build (escludere da git)
+- AIoT-IDE può accettare anche `app.ux` e `manifest.json` direttamente nella root (senza `src/`)
+- La cartella `src/` è **fortemente raccomandata** per progetti professionali
+- `dist/` è generata automaticamente dal build (escludere da git)
+- I file di configurazione nella root (`.*rc.js`, `commitlint.config.js`) sono opzionali ma migliorano qualità e manutenibilità
 
 **Struttura minima:**
 ```
