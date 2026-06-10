@@ -72,6 +72,38 @@ touch manifest.json app.ux
 mkdir -p pages/index common
 ```
 
+**Struttura cartelle standard:**
+
+```
+my-band-app/
+├── src/                      # Codice sorgente (se usi toolchain moderno)
+│   ├── app.ux               # Entry point globale (onCreate/onDestroy)
+│   ├── manifest.json        # Configurazione app
+│   ├── pages/               # Pagine dell'app
+│   │   └── index/
+│   │       └── index.ux     # Pagina principale
+│   ├── common/              # Risorse condivise
+│   │   ├── logo.png         # Icona app (108×108px)
+│   │   ├── images/          # Altre immagini
+│   │   └── utils.js         # Utility functions
+│   ├── i18n/                # Internazionalizzazione (opzionale)
+│   │   ├── en.json
+│   │   ├── zh-CN.json
+│   │   └── defaults.json
+│   └── config-watch.json    # Configurazione watch mode
+├── dist/                     # Build output (generato, .gitignore)
+├── .gitignore
+├── package.json             # Dipendenze e scripts (opzionale)
+├── README.md
+└── build.sh                 # Script helper (opzionale)
+```
+
+**Note sulla struttura:**
+- AIoT-IDE può creare direttamente `app.ux` e `manifest.json` nella root
+- La cartella `src/` è opzionale ma raccomandata per progetti professionali
+- File **essenziali minimi**: `manifest.json`, `app.ux`, `pages/index/index.ux`, `common/logo.png`
+- Cartella `dist/` è generata da AIoT-IDE durante il build (escludere da git)
+
 **Struttura minima:**
 ```
 my-band-app/
