@@ -505,9 +505,27 @@ export default {
 }
 ```
 
+## Publishing Vela JS skills to GitHub
+
+When documenting project structure:
+1. **Check the real project first** — don't rely on AIoT-IDE defaults alone
+2. **Include all toolchain config files** — `.prettierrc.js`, `.stylelintrc.js`, `.eslintignore`, `commitlint.config.js`, `husky.sh`, `jsconfig.json`
+3. **Document optional vs essential** — separate "works in AIoT-IDE" from "professional setup"
+4. **MIT License** — use `@username` in copyright if user prefers privacy over real name
+5. **Multi-agent installation** — document setup for Hermes, Claude Code, Pi Agent, OpenCode, and generic AI agents
+
+Standard README sections for published skills:
+- Features & when to use
+- Installation (Hermes + other agents)
+- Usage examples
+- Structure overview
+- Resources & links
+- Contributing guidelines
+- License (MIT recommended)
+
 ## Pitfalls comuni
 
-### 1. Schermo 212×520px ma designWidth 480
+### 1. Display troppo piccolo (212×520px)
 
 Il framework scala automaticamente. Progetta sempre per 480px di larghezza logica:
 - Font size: 28–40px (leggibile)
@@ -551,6 +569,12 @@ Testa sempre su Mi Band 10 reale per:
 - Touch/gesture
 - Sensori hardware
 - Consumo batteria
+
+## Risorse interne
+
+- `references/timer-scheduler-pattern.md` — Pattern timer vs scheduler per task periodici
+- `references/data-tracking-app-pattern.md` — Pattern multi-view per app di data tracking (habit/mood/spesa tracker). Include: navigation state, storage con array, streak calc, cleanup, statistics, bottom nav UI, form input
+- `references/publishing-hermes-skills.md` — Workflow completo pubblicazione skill Hermes su GitHub
 
 ## Risorse ufficiali
 
@@ -631,6 +655,7 @@ Testa sempre su Mi Band 10 reale per:
 Questa skill include reference file con pattern validati:
 
 - **`references/timer-scheduler-pattern.md`** — Pattern completo per app timer-based (vibrazione oraria, reminder, scheduler). Include: gestione timer con anti-drift, storage multi-stato, protezione anti-duplicati, UI ottimizzata 212×520px, testing checklist. Validato in produzione.
+- **`references/data-tracking-app-pattern.md`** — Pattern multi-view per app di data tracking (habit, mood, spesa, studio timer). Include: navigation state con view switcher, storage con array di date, streak calculation, cleanup automatico, statistics aggregation, bottom nav UI, form input con icon/color picker. Validato con Habit Tracker.
 
 ---
 
