@@ -173,7 +173,7 @@ This skill is released under the [MIT License](LICENSE).
 
 ## 👤 Author
 
-Created by **Andrea Forlin** (@paraflu) - developed with Hermes Agent
+Created by **@paraflu** - built with Hermes Agent
 
 ---
 
