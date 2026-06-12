@@ -1,27 +1,27 @@
 # File-Based Storage Utility
 
-# 文件级键值存储工具（File-based Storage Utility）
+## File-level key-value storage utility
 
-> 来源：com.bandbbs.ebook 项目 `src/utils/storage.js`
-> 官方文档状态：**官方未收录** — 官方有 `@system.storage` 接口，但本模式是基于 `@system.file` 实现的更可靠替代方案
+> Source: com.bandbbs.ebook project `src/utils/storage.js`
+> Official documentation status: **Not listed** — `@system.storage` exists, but this pattern is a more reliable alternative built on `@system.file`
 
-## 背景
+## Background
 
-`@system.storage` 是官方提供的键值存储接口，但在实际 IoT 设备上存在以下问题：
-- 存储容量有限
-- 不同设备行为不一致
-- 缺乏批量操作能力
+`@system.storage` is the official KV storage API, but on real IoT devices it has issues:
+- limited capacity
+- inconsistent behavior across devices
+- lacks batch operations
 
-参考项目实现了一个基于 `@system.file` 的键值存储工具，使用 JSON 文件持久化，具有更好的可控性。
+The reference project implements a file-based KV storage utility using `@system.file` and JSON persistence for better control.
 
-## 完整实现代码
+## Full implementation code
 
 ```javascript
 import file from '@system.file'
 
 const fileSavedPath = 'internal://files/books/storage-api/savedFile'
 
-// 全局缓存，避免重复读取文件
+// Global cache to avoid repeated file reads
 if (typeof global.__storage_cache__ === 'undefined') {
   global.__storage_cache__ = null
 }
@@ -84,7 +84,7 @@ function saveToFile() {
   })
 }
 
-// 读取
+// Read
 function get(param = {}) {
   loadIfNeeded(data => {
     const key = param.key
@@ -97,7 +97,7 @@ function get(param = {}) {
   })
 }
 
-// 写入
+// Write
 function set(param = {}) {
   loadIfNeeded(data => {
     const safeData = data || {}
@@ -111,7 +111,7 @@ function set(param = {}) {
   })
 }
 
-// 批量保存整个对象
+// Save entire object in batch
 function save(data, param = {}) {
   loadIfNeeded(() => {
     global.__storage_cache__ = (data && typeof data === 'object') ? data : {}
@@ -121,7 +121,7 @@ function save(data, param = {}) {
   })
 }
 
-// 清空
+// Clear
 function clear(param = {}) {
   global.__storage_cache__ = {}
   saveToFile()
@@ -129,7 +129,7 @@ function clear(param = {}) {
   if (param.complete) param.complete()
 }
 
-// 删除单个键
+// Delete single key
 function del(param = {}) {
   loadIfNeeded(data => {
     if (data && param.key in data) {
@@ -145,58 +145,58 @@ function del(param = {}) {
 export default { get, set, clear, delete: del, save }
 ```
 
-## 使用示例
+## Example usage
 
 ```javascript
 import storage from '../../utils/storage'
 
-// 读取
+// Read
 storage.get({
   key: 'fontSize',
   default: '16',
   success: (val) => {
-    console.log('字体大小:', val)
+    console.log('Font size:', val)
   }
 })
 
-// 写入
+// Write
 storage.set({
   key: 'fontSize',
   value: '20',
   success: () => {
-    console.log('保存成功')
+    console.log('Save successful')
   }
 })
 
-// 批量保存
+// Save in batch
 storage.save({
   fontSize: '20',
   theme: 'dark',
   language: 'zh-CN'
 })
 
-// 删除单个键
+// Delete single key
 storage.delete({ key: 'theme' })
 
-// 清空所有
+// Clear all
 storage.clear()
 ```
 
-## 设计要点
+## Design highlights
 
-1. **全局缓存**：使用 `global.__storage_cache__` 避免每次读取都访问文件系统
-2. **回调队列**：首次加载时，多个并发请求排队等待，只读一次文件
-3. **延迟写入**：只有值实际变化时才写文件，减少 IO 操作
-4. **JSON 持久化**：整个存储作为一个 JSON 文件，便于调试和备份
+1. **Global cache**: use `global.__storage_cache__` to avoid filesystem reads on every access
+2. **Callback queue**: concurrent requests queue during first load so the file is read once
+3. **Deferred writes**: write only when values actually change to reduce IO
+4. **JSON persistence**: store entire data as a JSON file for easier debugging and backups
 
-## 与官方 @system.storage 的对比
+## Comparison with official `@system.storage`
 
-| 特性 | @system.storage | 文件级存储工具 |
+| Feature | @system.storage | File-based utility |
 |------|----------------|---------------|
-| 底层实现 | 系统级 KV 存储 | @system.file + JSON |
-| 容量限制 | 设备相关，通常较小 | 受限于文件系统空间 |
-| 批量操作 | 不支持 | 支持 save() 批量写入 |
-| 数据格式 | 仅 String | 任意 JSON 可序列化值 |
-| 调试友好 | 不可直接查看 | 可直接读取 JSON 文件 |
-| 缓存机制 | 无 | 内置全局缓存 |
-| 删除单键 | 设空字符串 | 真正的 delete 操作 |
+| Implementation | system-level KV | @system.file + JSON |
+| Capacity limits | device-dependent, usually small | limited by filesystem space |
+| Batch operations | not supported | supports `save()` batch write |
+| Data format | strings only | any JSON-serializable value |
+| Debug-friendly | not directly viewable | can read the JSON file directly |
+| Caching | none | built-in global cache |
+| Delete single key | set empty string | actual delete operation |

@@ -1,26 +1,26 @@
 # Chunked File Reading
 
-# 大文件分块读取模式（Chunked File Reading）
+## Chunked File Reading Pattern
 
-> 来源：com.bandbbs.ebook 项目 `src/pages/detail/detail.ux`
-> 官方文档状态：**官方接口已有，但未提供大文件分块读取的实践模式** — `file.readArrayBuffer` 支持 `position` 和 `length` 参数，但官方示例仅展示单次读取
+> Source: com.bandbbs.ebook project `src/pages/detail/detail.ux`
+> Official documentation status: **The API exists, but no practical chunked-reading pattern is provided** — `file.readArrayBuffer` supports `position` and `length`, but official examples only show single-shot reads
 
-## 背景
+## Background
 
-IoT 设备内存有限（通常 128MB-512MB），不能一次性将大文件读入内存。电子书应用需要读取几 MB 的文本文件，采用了基于 `file.readArrayBuffer` 的分块读取策略。
+IoT devices have limited memory (typically 128MB–512MB) and cannot load large files into memory at once. E-book applications need to read multi-megabyte text files; a chunked reading strategy using `file.readArrayBuffer` is used.
 
-## 核心实现
+## Core implementation
 
 ```javascript
 import file from '@system.file'
 
 /**
- * 分块读取大文件
- * @param {string} uri - 文件路径
- * @param {number} fileSize - 文件总大小（字节）
- * @param {number} chunkSize - 每块大小（字节），建议 8192-65536
- * @param {Function} onChunk - 每块回调 (chunkText, offset, isLast)
- * @param {Function} onComplete - 全部读取完成回调
+ * Read a large file in chunks
+ * @param {string} uri - file path
+ * @param {number} fileSize - total file size (bytes)
+ * @param {number} chunkSize - chunk size (bytes), recommended 8192-65536
+ * @param {Function} onChunk - chunk callback (chunkText, offset, isLast)
+ * @param {Function} onComplete - called when all chunks are read
  */
 function readLargeFile(uri, fileSize, chunkSize, onChunk, onComplete) {
   let readOffset = 0
@@ -39,7 +39,7 @@ function readLargeFile(uri, fileSize, chunkSize, onChunk, onComplete) {
         const buffer = new Uint8Array(data.buffer)
         let bytesToUse = buffer.length
 
-        // 解码为文本（UTF-16LE 编码的文本文件）
+        // Decode to text (UTF-16LE encoded text file)
         const text = decodeUTF16LE(buffer, bytesToUse)
 
         readOffset += bytesToUse
@@ -48,7 +48,7 @@ function readLargeFile(uri, fileSize, chunkSize, onChunk, onComplete) {
         onChunk(text, readOffset, isLast)
 
         if (!isLast) {
-          // 继续读取下一块
+          // Continue reading next chunk
           attemptRead(chunkSize, 3)
         } else {
           if (onComplete) onComplete()
@@ -56,10 +56,10 @@ function readLargeFile(uri, fileSize, chunkSize, onChunk, onComplete) {
       },
       fail: (data, code) => {
         if (attemptsLeft > 0) {
-          // 重试
+          // Retry
           setTimeout(() => attemptRead(len, attemptsLeft - 1), 100)
         } else {
-          console.error('读取失败:', code)
+          console.error('Read failed:', code)
           if (onComplete) onComplete()
         }
       }
@@ -70,7 +70,7 @@ function readLargeFile(uri, fileSize, chunkSize, onChunk, onComplete) {
 }
 
 /**
- * UTF-16LE 解码
+ * UTF-16LE decoding
  */
 function decodeUTF16LE(buffer, length) {
   let result = ''
@@ -82,20 +82,20 @@ function decodeUTF16LE(buffer, length) {
 }
 ```
 
-## 防止段落被截断的优化
+## Paragraph truncation prevention (optimization)
 
-分块读取可能在段落中间截断。参考项目实现了段落完整性保护：
+Chunked reads may split paragraphs in the middle. The reference project implements paragraph integrity protection:
 
 ```javascript
 /**
- * 带段落保护的分块读取
- * 
- * 关键思想：读取一块数据后，从末尾向前查找最后一个换行符，
- * 只处理到换行符为止的内容，剩余部分与下一块合并。
+ * Chunked reading with paragraph protection
+ *
+ * Key idea: after reading a chunk, search backwards for the last newline,
+ * process only up to that newline and merge the remainder with the next chunk.
  */
 function readWithParagraphProtection(uri, fileSize, chunkSize, onChunk, onComplete) {
   let readOffset = 0
-  let remainder = ''  // 上一块未处理的尾部
+  let remainder = ''  // Unprocessed tail from previous chunk
 
   function readNext(len) {
     file.readArrayBuffer({
@@ -104,7 +104,7 @@ function readWithParagraphProtection(uri, fileSize, chunkSize, onChunk, onComple
       length: len,
       success: (data) => {
         if (!data.buffer || data.buffer.byteLength === 0) {
-          // 处理最后的余留内容
+          // Handle final remainder
           if (remainder) onChunk(remainder, readOffset, true)
           if (onComplete) onComplete()
           return
@@ -115,7 +115,7 @@ function readWithParagraphProtection(uri, fileSize, chunkSize, onChunk, onComple
         const isLast = (readOffset + buffer.length) >= fileSize
 
         if (!isLast) {
-          // 从末尾找最后一个换行符（UTF-16LE 中换行是 0x000A）
+          // Find last newline from the end (newline is 0x000A in UTF-16LE)
           let lastNewlinePos = -1
           for (let i = buffer.length - 2; i >= 0; i -= 2) {
             const charCode = buffer[i + 1] * 256 + buffer[i]
@@ -132,8 +132,8 @@ function readWithParagraphProtection(uri, fileSize, chunkSize, onChunk, onComple
         const text = remainder + decodeUTF16LE(buffer, bytesToUse)
         remainder = ''
 
-        if (!isLast && bytesToUse < buffer.length) {
-          // 保存未处理的尾部
+          if (!isLast && bytesToUse < buffer.length) {
+          // Save unprocessed tail
           remainder = decodeUTF16LE(
             buffer.slice(bytesToUse),
             buffer.length - bytesToUse
@@ -159,29 +159,29 @@ function readWithParagraphProtection(uri, fileSize, chunkSize, onChunk, onComple
 }
 ```
 
-## 使用示例
+## Example usage
 
 ```javascript
 readWithParagraphProtection(
   'internal://files/books/novel.txt',
-  1024 * 1024,  // 文件大小 1MB
-  16384,         // 每块 16KB
+  1024 * 1024,  // file size 1MB
+  16384,         // chunk 16KB
   (text, offset, isLast) => {
-    // 将文本追加到显示区域
+    // Append text to the display area
     this.content += text
-    // 更新进度
+    // Update progress
     this.readProgress = Math.floor(offset / (1024 * 1024) * 100)
   },
   () => {
-    console.log('读取完成')
+    console.log('Read complete')
   }
 )
 ```
 
-## 性能建议
+## Performance recommendations
 
-1. **块大小选择**：8KB-64KB 为宜，太小会增加 IO 次数，太大占用过多内存
-2. **使用 `position` 参数**：避免读取整个文件再截取
-3. **UTF-16LE 注意事项**：Vela 系统的文本文件可能是 UTF-16LE 编码，每个字符占 2 字节，分块时需要对齐到 2 字节边界
-4. **重试机制**：IoT 设备 IO 可能不稳定，建议实现 3 次重试
-5. **进度反馈**：大文件读取耗时较长，应向用户显示进度
+1. **Chunk size**: 8KB–64KB recommended; too small increases IO, too large uses excessive memory
+2. **Use `position` parameter**: avoid reading the whole file and slicing
+3. **UTF-16LE considerations**: Vela system text files may be UTF-16LE encoded (2 bytes per character); align chunks to 2-byte boundaries
+4. **Retry mechanism**: IoT device IO can be unstable; implement 3 retries
+5. **Progress feedback**: reading large files takes time; show progress to the user
