@@ -1,35 +1,35 @@
 # Data-Tracking App Pattern (Multi-View)
 
-Pattern per app Vela JS che raccolgono e visualizzano dati strutturati (habit tracker, mood tracker, spesa giornaliera, studio timer). Validato con l'app Habit Tracker (com.forlin.habittracker).
+Pattern for Vela JS apps that collect and display structured data (habit tracker, mood tracker, daily spending, study timer). Validated with the Habit Tracker app (com.forlin.habittracker).
 
-## Quando usare questo pattern
+## When to use this pattern
 
-- App con 2+ viste navigationabili (today, add, stats)
-- Dati persistenti con strutture complesse (array di date, oggetti annidati)
-- Statistiche calcolate da dati stored
-- UI con lista interattiva + form di input + dashboard
+- Apps with 2+ navigable views (today, add, stats)
+- Persistent data with complex structures (arrays of dates, nested objects)
+- Statistics computed from stored data
+- UI with interactive list + input form + dashboard
 
-## Architettura
+## Architecture
 
 ```
 src/pages/index/index.ux
 ├── <template>
-│   ├── Header (titolo + data)
+│   ├── Header (title + date)
 │   ├── Content (view switcher)
-│   │   ├── View: today      — lista interattiva con checkbox
-│   │   ├── View: add        — form input + picker
-│   │   └── View: stats      — dashboard con card + classifica
-│   └── Bottom Nav (3 item: list, +, stats)
+│   │   ├── View: today      — interactive list with checkbox
+│   │   ├── View: add        — input form + picker
+│   │   └── View: stats      — dashboard with cards + ranking
+│   └── Bottom Nav (3 items: list, +, stats)
 └── <script>
     ├── data: { view, items[], form fields, computed stats }
-    ├── Storage: load/save con JSON.stringify/parse
+    ├── Storage: load/save with JSON.stringify/parse
     ├── Business logic: CRUD, streak calc, cleanup
     └── Navigation: switchView()
 ```
 
 ## Navigation Pattern
 
-Usare `data.view` per switchare tra viste (non routing multi-pagina):
+Use `data.view` to switch between views (not multi-page routing):
 
 ```javascript
 data: {
@@ -43,17 +43,17 @@ switchView(v) {
 }
 ```
 
-**Perché non routing?** Su schermo 212×520px, navigazione instantanea senza transizioni è più fluida. Il routing multi-pagina è meglio per app con pagine indipendenti.
+**Why not routing?** On a 212×520px screen, instant navigation without transitions is smoother. Multi-page routing is better for apps with independent pages.
 
-## Storage Pattern (Array di date)
+## Storage Pattern (Array of dates)
 
-Per app che tracciano completamenti giornalieri:
+For apps that track daily completions:
 
 ```javascript
-// Struttura dati
+// Data structure
 habits = [
   {
-    id: '1718000000000',     // Date.now() come stringa
+    id: '1718000000000',     // Date.now() as string
     name: 'Exercise',
     icon: '💪',
     color: '#22c55e',
@@ -63,21 +63,21 @@ habits = [
   }
 ]
 
-// Salva
+// Save
 storage.set({ key: 'habits_data', value: JSON.stringify(this.habits) })
 
-// Carica
+// Load
 storage.get({
   key: 'habits_data',
   success: (data) => { if (data) this.habits = JSON.parse(data) }
 })
 ```
 
-**Pitfall:** `storage.set` accetta solo stringhe. Usare sempre `JSON.stringify/parse`.
+**Pitfall:** `storage.set` only accepts strings. Always use `JSON.stringify/parse`.
 
 ## Streak Calculation
 
-Algoritmo per calcolare giorni consecutivi:
+Algorithm to calculate consecutive days:
 
 ```javascript
 calcStreak(completions, todayStr, yestStr) {
@@ -99,11 +99,11 @@ calcStreak(completions, todayStr, yestStr) {
 }
 ```
 
-**Nota:** Usare stringhe ISO (`YYYY-MM-DD`) per confronti, non oggetti Date.
+**Note:** Use ISO strings (`YYYY-MM-DD`) for comparisons, not Date objects.
 
 ## Cleanup Old Data
 
-Evitare crescita incontrollata dello storage:
+Avoid uncontrolled storage growth:
 
 ```javascript
 cleanOldCompletions() {
@@ -121,7 +121,7 @@ cleanOldCompletions() {
 
 ## Statistics Aggregation
 
-Pattern per calcolare statistiche da dati stored:
+Pattern for computing statistics from stored data:
 
 ```javascript
 updateStats() {
@@ -143,7 +143,7 @@ updateStats() {
 
 ## Bottom Navigation UI
 
-Pattern per nav bar su schermo piccolo:
+Pattern for nav bar on small screen:
 
 ```html
 <div class="bottom-nav">
@@ -181,7 +181,7 @@ Pattern per nav bar su schermo piccolo:
 
 ## Form Input Pattern
 
-Per form su schermo piccolo (212×520px):
+For forms on small screen (212×520px):
 
 ```html
 <text class="add-label">Name</text>
@@ -204,14 +204,76 @@ Per form su schermo piccolo (212×520px):
 
 ## App References
 
-- **Habit Tracker**: `https://github.com/paraflu/habit-tracker-miband` — Multi-view data tracking con streaks, statistics, icon/color customization
-- **Hourly Vibrator**: `https://github.com/paraflu/miband10-hourly-vibrator` — Timer-based app con anti-drift pattern
+- **Habit Tracker**: `https://github.com/paraflu/habit-tracker-miband` — Multi-view data tracking with streaks, statistics, icon/color customization
+- **Hourly Vibrator**: `https://github.com/paraflu/miband10-hourly-vibrator` — Timer-based app with anti-drift pattern
+
+## Advanced: Auto-save on onHide
+
+Automatically saves when the app goes to background:
+
+```javascript
+onShow() {
+  this.loadData()
+  this.updateStats()
+},
+
+onHide() {
+  // Auto-save when the app goes to background
+  this.saveData()
+  console.log('Data saved on hide')
+},
+
+onDestroy() {
+  this.saveData()
+  global.runGC()
+}
+```
+
+## Advanced: Data Export
+
+Exports data as JSON file for backup or transfer:
+
+```javascript
+import file from '@system.file'
+
+exportData() {
+  const exportData = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    habits: this.habits
+  }
+
+  file.writeText({
+    uri: 'internal://cache/habits_export.json',
+    text: JSON.stringify(exportData, null, 2),
+    success: () => {
+      prompt.showToast({ message: 'Data exported' })
+    },
+    fail: (err) => {
+      console.error('Export failed:', err)
+    }
+  })
+}
+```
+
+## Advanced: global.runGC()
+
+```javascript
+refreshAll() {
+  this.loadData()
+  this.updateStats()
+  this.cleanOldCompletions()
+  global.runGC() // Free memory after refresh
+}
+```
 
 ## Pitfalls
 
-1. **Date comparison**: Usare stringhe ISO, non oggetti Date (fuso orario può rompere i confronti)
-2. **Storage limit**: Mantenere max 90 giorni di dati. Pulire automaticamente al load
-3. **Array grow**: `completions.push()` può crescere indefinitamente — sempre pair con cleanup
-4. **Streak continuity**: Se oggi non è completato e neanche ieri, streak = 0 (non calcolare all'indietro)
-5. **ID generazione**: Usare `Date.now().toString()` come ID — semplice e univoco senza UUID library
-6. **Navigation state**: Non usare routing multi-pagina per view switch — il data binding è più fluido
+1. **Date comparison**: Use ISO strings, not Date objects (timezone can break comparisons)
+2. **Storage limit**: Keep max 90 days of data. Clean automatically on load
+3. **Array grow**: `completions.push()` can grow indefinitely — always pair with cleanup
+4. **Streak continuity**: If today is not completed and neither is yesterday, streak = 0 (don't calculate backwards)
+5. **ID generation**: Use `Date.now().toString()` as ID — simple and unique without UUID library
+6. **Navigation state**: Don't use multi-page routing for view switching — data binding is smoother
+7. **Always save in `onHide()`**: The app can be killed in background without going through `onDestroy()`
+8. **Use `global.runGC()`** after heavy data refresh to keep memory free

@@ -1,16 +1,16 @@
-# Timer & Scheduler Pattern per Vela JS Apps
+# Timer & Scheduler Pattern for Vela JS Apps
 
-Pattern validato per app che eseguono azioni ricorrenti basate su tempo (vibrazione oraria, reminder, notifiche schedulate).
+Validated pattern for apps that execute recurring time-based actions (hourly vibration, reminders, scheduled notifications).
 
 ## Architecture Overview
 
 ```
 ┌─────────────────────────────────┐
-│  setInterval(1000ms)            │  Timer principale
-│  └─> updateTime()               │  Aggiorna UI ogni secondo
-│      └─> checkForEvent()        │  Controlla condizioni trigger
-│          └─> performAction()    │  Esegue azione se match
-│              └─> saveState()    │  Persiste per anti-duplicati
+│  setInterval(1000ms)            │  Main timer
+│  └─> updateTime()               │  Updates UI every second
+│      └─> checkForEvent()        │  Checks trigger conditions
+│          └─> performAction()    │  Performs action if match
+│              └─> saveState()    │  Persists for anti-duplicate
 └─────────────────────────────────┘
 ```
 
@@ -40,7 +40,7 @@ export default {
   },
   
   startTimeCheck() {
-    // Update ogni secondo per precisione e UI live
+    // Update every second for precision and live UI
     this.checkIntervalId = setInterval(() => {
       this.updateTime()
       
@@ -52,12 +52,12 @@ export default {
 }
 ```
 
-**Rationale: 1 secondo vs 60 secondi**
-- Pro: Cattura precisa del momento :00, UI sempre aggiornata
-- Contro: Consumo batteria ~2-3% al giorno (accettabile)
-- Alternativa `setInterval(60000)` rischia di perdere il trigger esatto
+**Rationale: 1 second vs 60 seconds**
+- Pro: Precise capture of the :00 moment, UI always updated
+- Con: Battery consumption ~2-3% per day (acceptable)
+- Alternative `setInterval(60000)` risks missing the exact trigger
 
-### 2. Event Detection con Finestra di Cattura
+### 2. Event Detection with Capture Window
 
 ```javascript
 checkForHourlyEvent() {
@@ -66,7 +66,7 @@ checkForHourlyEvent() {
   const currentMinute = now.getMinutes()
   const currentSecond = now.getSeconds()
   
-  // Finestra 2 secondi per compensare timer drift
+  // 2-second window to compensate for timer drift
   if (currentMinute === 0 && 
       currentSecond <= 2 && 
       this.lastTriggeredHour !== currentHour) {
@@ -81,16 +81,16 @@ checkForHourlyEvent() {
 ```
 
 **Pitfall: setInterval drift**
-- `setInterval(1000)` non è preciso al millisecond
-- Può triggare a :00:00.800 o :01:00.200
-- **Soluzione**: Finestra di 2-3 secondi + protezione duplicati via `lastTriggeredHour`
+- `setInterval(1000)` is not millisecond-precise
+- Can trigger at :00:00.800 or :01:00.200
+- **Solution**: 2-3 second window + duplicate protection via `lastTriggeredHour`
 
 ### 3. Multi-State Storage Pattern
 
 ```javascript
 import storage from '@system.storage'
 
-// Stato 1: Feature enabled/disabled
+// State 1: Feature enabled/disabled
 saveSettings() {
   storage.set({
     key: 'app_enabled',
@@ -105,12 +105,12 @@ loadSettings() {
       this.isEnabled = data === 'true'
     },
     fail: () => {
-      this.isEnabled = false  // Default sicuro
+      this.isEnabled = false  // Safe default
     }
   })
 }
 
-// Stato 2: Daily counter con auto-reset
+// State 2: Daily counter with auto-reset
 saveCounter() {
   const data = {
     date: new Date().toDateString(),
@@ -133,7 +133,7 @@ loadCounter() {
       if (saved.date === today) {
         this.counterToday = saved.count
       } else {
-        this.counterToday = 0  // Nuovo giorno
+        this.counterToday = 0  // New day
         this.saveCounter()
       }
     },
@@ -143,7 +143,7 @@ loadCounter() {
   })
 }
 
-// Stato 3: Last triggered (anti-duplicati)
+// State 3: Last triggered (anti-duplicate)
 saveLastTriggeredHour(hour) {
   storage.set({
     key: 'app_lastHour',
@@ -164,10 +164,10 @@ loadLastTriggeredHour() {
 }
 ```
 
-**Perché 3 chiavi separate**:
-- Più facile debuggare (ogni stato indipendente)
-- Reset selettivo (es. counter senza disabilitare feature)
-- Backward compatibility (aggiungere stato 4 senza migrare tutto)
+**Why 3 separate keys**:
+- Easier debugging (each state independent)
+- Selective reset (e.g., counter without disabling feature)
+- Backward compatibility (add state 4 without migrating everything)
 
 ### 4. UI Update Pattern
 
@@ -180,15 +180,15 @@ updateTime() {
   
   this.currentTime = `${hours}:${minutes}:${seconds}`
   
-  // Calcola prossimo trigger
+  // Calculate next trigger
   const nextHour = (now.getHours() + 1) % 24
   this.nextEventTime = `${String(nextHour).padStart(2, '0')}:00`
 }
 ```
 
-**Binding automatico**: Modificare `this.currentTime` aggiorna automaticamente `{{ currentTime }}` nel template
+**Automatic binding**: Changing `this.currentTime` automatically updates `{{ currentTime }}` in the template
 
-## Template UI Ottimizzato 212×520px
+## Optimized UI Template 212×520px
 
 ```vue
 <template>
@@ -330,7 +330,7 @@ updateTime() {
 </style>
 ```
 
-**Design System per 212×520px (designWidth: 480)**:
+**Design System for 212×520px (designWidth: 480)**:
 - Font title: 38-40px
 - Font primary: 32px
 - Font secondary: 26-28px
@@ -350,7 +350,7 @@ checkForIntervalEvent() {
   const currentMinute = now.getMinutes()
   const currentSecond = now.getSeconds()
   
-  // Ogni 15 minuti (:00, :15, :30, :45)
+  // Every 15 minutes (:00, :15, :30, :45)
   if (currentMinute % 15 === 0 && 
       currentSecond <= 2 &&
       this.lastTriggeredMinute !== currentMinute) {
@@ -361,7 +361,7 @@ checkForIntervalEvent() {
 }
 ```
 
-### Time Range Filter (es. solo giorno)
+### Time Range Filter (e.g., daytime only)
 
 ```javascript
 data: {
@@ -372,12 +372,12 @@ data: {
 checkForHourlyEvent() {
   const hour = now.getHours()
   
-  // Fuori range → skip
+  // Out of range → skip
   if (hour < this.enabledStartHour || hour >= this.enabledEndHour) {
     return
   }
   
-  // ... resto logica
+  // ... rest of logic
 }
 ```
 
@@ -407,52 +407,52 @@ performAction() {
 
 ## Testing Checklist
 
-### Funzionali
-- [ ] Azione test funziona (button immediato)
-- [ ] Toggle attiva/disattiva aggiorna stato e UI
-- [ ] Timer aggiorna UI ogni secondo
-- [ ] Calcolo prossimo evento corretto
+### Functional
+- [ ] Test action works (immediate button)
+- [ ] Enable/disable toggle updates state and UI
+- [ ] Timer updates UI every second
+- [ ] Next event calculation correct
 
-### Temporali (richiede pazienza)
-- [ ] Aspetta :59:58 → verifica trigger a :00:00
-- [ ] Verifica NO trigger a :00:05 (protezione duplicati)
-- [ ] Riavvia app a :00:30 → NO trigger all'ora già passata
+### Temporal (requires patience)
+- [ ] Wait for :59:58 → verify trigger at :00:00
+- [ ] Verify NO trigger at :00:05 (duplicate protection)
+- [ ] Restart app at :00:30 → NO trigger for already passed hour
 
-### Persistenza
-- [ ] Attiva, chiudi, riapri → stato conservato
-- [ ] Trigger a 10:00, riavvia a 10:30 → counter corretto
-- [ ] Trigger a 23:00, passa mezzanotte → counter reset a 0
+### Persistence
+- [ ] Enable, close, reopen → state preserved
+- [ ] Trigger at 10:00, restart at 10:30 → counter correct
+- [ ] Trigger at 23:00, past midnight → counter reset to 0
 
 ### Edge Cases
-- [ ] Cambio manuale ora device → NO trigger multipli
-- [ ] App in background → continua a funzionare
-- [ ] Batteria scarica → comportamento graceful
+- [ ] Manual device time change → NO multiple triggers
+- [ ] App in background → continues working
+- [ ] Low battery → graceful behavior
 
 ## Pitfalls
 
-### 1. App killata dal sistema
-**Problema**: HyperOS può terminare l'app se memoria scarsa
-**Impatto**: Timer si ferma fino a riavvio manuale
-**Workaround**: Companion app Android con AlarmManager + BLE wakeup
+### 1. App killed by system
+**Problem**: HyperOS can terminate the app if memory is low
+**Impact**: Timer stops until manual restart
+**Workaround**: Android companion app with AlarmManager + BLE wakeup
 
-### 2. Timer drift su long run
-**Problema**: `setInterval(1000)` accumula drift (~1-2s/ora)
-**Soluzione**: Finestra cattura 2-3 secondi compensa drift normale
+### 2. Timer drift on long run
+**Problem**: `setInterval(1000)` accumulates drift (~1-2s/hour)
+**Solution**: 2-3 second capture window compensates for normal drift
 
-### 3. No autostart dopo boot
-**Problema**: Quick App non ha autostart capability
-**Workaround**: Widget home screen o companion app che invia wakeup message
+### 3. No autostart after boot
+**Problem**: Quick App has no autostart capability
+**Workaround**: Home screen widget or companion app that sends wakeup message
 
 ### 4. Storage callback-based (no async/await)
-**Errore comune**:
+**Common mistake**:
 ```javascript
-// ❌ NON funziona
+// ❌ Does NOT work
 const data = await storage.get({ key: 'x' })
 ```
 
-**Corretto**:
+**Correct**:
 ```javascript
-// ✅ Usa callback
+// ✅ Use callback
 storage.get({
   key: 'x',
   success: (data) => {
@@ -476,15 +476,72 @@ my-scheduler-app/
 ```
 
 **Documentation split**:
-- `README.md`: Guida utente, build, installazione, personalizzazioni
-- `DEVELOPMENT.md`: Decisioni design, pattern tecnici, testing, known issues
+- `README.md`: User guide, build, installation, customizations
+- `DEVELOPMENT.md`: Design decisions, technical patterns, testing, known issues
+
+## Advanced: onBackPress Pattern
+
+```javascript
+onBackPress() {
+  if (this.isEnabled) {
+    // Ask for confirmation before exiting
+    prompt.showToast({ message: 'Disabilita prima di uscire' })
+    return true // Block exit
+  }
+  this.saveSettings() // Save before exiting
+  return false // Allow exit
+}
+```
+
+## Advanced: onHide Lifecycle
+
+Saves state when the app goes to background (e.g., notification arrives):
+
+```javascript
+onShow() {
+  if (this.isEnabled && !this.checkIntervalId) {
+    this.startTimeCheck() // Resume timer if it was active
+  }
+},
+
+onHide() {
+  // Save state before hiding
+  this.saveSettings()
+  this.saveCounter()
+},
+
+onDestroy() {
+  // Full cleanup
+  if (this.checkIntervalId) {
+    clearInterval(this.checkIntervalId)
+    this.checkIntervalId = null
+  }
+  global.runGC() // Force garbage collection
+}
+```
+
+## Advanced: global.runGC()
+
+After heavy operations (e.g., batch calculation, UI refresh):
+
+```javascript
+refreshUI() {
+  this.updateTime()
+  this.checkForHourlyEvent()
+  this.updateStats()
+  global.runGC() // Free memory after refresh
+}
+```
 
 ## Performance Notes
 
-- Timer a 1s consuma ~2-3% batteria/giorno (accettabile)
-- RAM limitata: max 3-4 componenti complessi per pagina
-- Evita re-render inutili: check valore prima di assegnare a `data`
+- 1s timer consumes ~2-3% battery/day (acceptable)
+- Limited RAM: max 3-4 complex components per page
+- Avoid unnecessary re-renders: check value before assigning to `data`
+- Call `global.runGC()` after UI refresh or heavy calculations
+- Use `onHide()` to save state and stop timer when the app goes to background
+- Use `onBackPress()` to handle clean exit
 
 ## Session Reference
 
-Creato da sessione 2026-06-10: app "Hourly Vibrator" funzionante completa con tutte le feature del pattern.
+Created from session 2026-06-10: fully working "Hourly Vibrator" app with all pattern features.
